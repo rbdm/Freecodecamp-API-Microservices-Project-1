@@ -28,18 +28,37 @@ var listener = app.listen(process.env.PORT, function () {
   console.log('Your app is listening on port ' + listener.address().port);
 });
 
+// solution
+// UNIX timestamp would be an integer
+function isInteger(n) {
+  return !isNaN(parseInt(n * 1))
+};
+
+// GET on the specified endpoint
 app.get('/api/timestamp/:date_string?', (req,res) => {
-  let date_string = null;
+  let date_string;
+  
+  // First, if date_string empty, return Date.now()
   (req.params.date_string == null) ?
     date_string = new Date(Date.now())
-    : date_string = new Date(req.params.date_string);
+  
+    // Then if it is an integer, format UNIX..
+    : (isInteger(req.params.date_string)) ?
+      date_string = new Date(parseInt(req.params.date_string))
+  
+      // ..If not, format UTC
+      : date_string = new Date(req.params.date_string);
 
+  // Use the specified JSON structure
   let output = {
     "unix": date_string.getTime(),
     "utc": date_string.toUTCString()
   };
 
-  //var output = new Date(date_string);
-  //console.log(output);
-  res.json(output);
+  // Check if invalid format
+  (date_string == "Invalid Date") ?
+    res.json({"error" : "Invalid Date"})
+  
+    // Final output
+    : res.json(output);
 });
